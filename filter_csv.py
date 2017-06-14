@@ -12,7 +12,7 @@ class Config:
     @staticmethod
     def filter(row):
         """
-        Takes an row as input. If returns True, row is written to new file.
+        Takes a row as input. If returns True, row is written to new file.
         See feature dictionary below for options.
         @params: row (list)
         @returns: boolean
@@ -46,7 +46,7 @@ if os.path.exists(Config.out_file):
 
 
 n_written = 0
-out_file = open(Config.out_file, 'at', newline='')
+out_file = open(Config.out_file, 'w', newline='')
 writer = csv.writer(out_file)
 
 files = glob(Config.src_files)
@@ -70,7 +70,7 @@ for i, filename in enumerate(files):
         if Config.filter(row):
             writer.writerow(row)
             n_written += 1
-        print('\r {} rows written in total.'.format(n_written), end='')
+            print('\r {} rows written'.format(n_written), end='')
 
     in_file.close()
 out_file.close()
