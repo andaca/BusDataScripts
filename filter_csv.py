@@ -1,10 +1,12 @@
 import csv
 from itertools import count
 import os
+from glob import glob
+import gzip
 
 
 class Config:
-    src_file = 'siri.20130101.csv'
+    src_files = 'siri*.gz'  # Only .gz and .csv files accepted.
     out_file = 'output.csv'
 
     @staticmethod
@@ -42,16 +44,36 @@ if os.path.exists(Config.out_file):
     print('File {} already exists. Exiting.'.format(Config.out_file))
     raise SystemExit
 
-with open(Config.src_file, newline='') as r:
-    n_written = 0
-    reader = csv.reader(r)
-    with open(Config.out_file, 'w', newline='') as w:
-        writer = csv.writer(w)
-        for row in reader:
-            if Config.filter(row):
-                writer.writerow(row)
-                n_written += 1
-                print('\r {} rows written'.format(n_written), end='')
+
+n_written = 0
+out_file = open(Config.out_file, 'at', newline='')
+writer = csv.writer(out_file)
+
+files = glob(Config.src_files)
+
+for i, filename in enumerate(files):
+    print('\n Processing file {} of {}...'.format(i + 1, len(files)))
+
+    extension = filename.split('.')[-1]
+
+    if extension == 'gz':
+        in_file = gzip.open(filename, 'rt', newline='')
+    elif extension == 'csv':
+        in_file = open(filename, newline='')
+    else:
+        out_file.close()
+        raise SystemExit(
+            'Unrecognised extension: {}. Exiting'.format(filename))
+
+    reader = csv.reader(in_file)
+    for row in reader:
+        if Config.filter(row):
+            writer.writerow(row)
+            n_written += 1
+        print('\r {} rows written in total.'.format(n_written), end='')
+
+    in_file.close()
+out_file.close()
 
 
 # the outfile is created, even if no rows were written
