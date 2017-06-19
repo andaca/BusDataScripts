@@ -1,3 +1,11 @@
+"""
+This file has largely been superceded by data_streamer.py
+
+It is here because it might still have some use, but it's 
+probably better to use data_streamer.py in conjection with
+a csv writer function (not yet implimented as of 19/06/17)
+"""
+
 import csv
 from itertools import count
 import os
