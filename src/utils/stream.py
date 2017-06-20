@@ -2,14 +2,6 @@ import csv
 from glob import glob
 import gzip
 
-from consumer import consume
-from config import Conf, feature
-
-
-class RowRejected(Exception):
-    """Raised to break out of nested loop when a row doesn't pass the filter"""
-    pass
-
 
 def files_opener(files_glob):
     """Open files that match the glob. Yields file objects sequentially,
@@ -39,14 +31,18 @@ def rowify(lines):
         yield row
 
 
-# TODO: Refactor?
-def filter_(rows, filter_spec):
+class RowRejected(Exception):
+    """Raised to break out of nested loop when a row doesn't pass the filter"""
+    pass
+
+
+def filter_rows(rows, filter_spec):
     """Applies the filter specified in the Conf class to the rows.
     Only yields matching rows."""
     for row in rows:
         try:
             for key, val in filter_spec.items():
-                if row[feature[key]] != val:
+                if row[key] != val:
                     raise RowRejected
             yield row
         except RowRejected:
@@ -54,20 +50,12 @@ def filter_(rows, filter_spec):
 
 
 def data_stream(files_glob):
+    """Yields rows (lists) from files matching files_glob (str).
+    @params : files_glob (str)
+    @yields : list
+    """
     files = files_opener(files_glob)
     lines = lines_reader(files)
     rows = rowify(lines)
     for row in rows:
         yield row
-
-
-def main():
-    files = files_opener(Conf.files)
-    lines = lines_reader(files)
-    all_rows = rowify(lines)
-    rows = filter_(all_rows, Conf.filter)
-    consume(rows)
-
-
-if __name__ == '__main__':
-    main()
