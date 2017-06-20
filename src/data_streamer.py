@@ -53,6 +53,14 @@ def filter_(rows, filter_spec):
             continue
 
 
+def data_stream(files_glob):
+    files = files_opener(files_glob)
+    lines = lines_reader(files)
+    rows = rowify(lines)
+    for row in rows:
+        yield row
+
+
 def main():
     files = files_opener(Conf.files)
     lines = lines_reader(files)
